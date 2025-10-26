@@ -4,6 +4,10 @@ Este repositorio contiene el proyecto completo desarrollado como Trabajo Prácti
 
 El sistema permite administrar clientes, actividades, pagos y rutinas, optimizando los procesos internos y mejorando la experiencia del usuario.
 
+## Autor
+**Jazmín Priscila Bustos**
+DNI 43.644.281
+
 ## Contenido del repositorio
 
 - `gimnasiodb.sql` : Script SQL para crear las tablas y relaciones de la base de datos.
