@@ -61,7 +61,20 @@ CREATE TABLE Cliente_Rutina (
     FOREIGN KEY (idCliente) REFERENCES Cliente(idCliente),
     FOREIGN KEY (idRutina) REFERENCES Rutina(idRutina)
 );
+-- ======================
+-- Tabla intermedia Ejercicio
+-- ======================
+CREATE TABLE Ejercicio (
+    idEjercicio INT PRIMARY KEY AUTO_INCREMENT,
+    idRutina INT NOT NULL,
+    nombre VARCHAR(50) NOT NULL,
+    series INT NOT NULL,
+    reps INT NOT NULL,
+    dia INT NOT NULL,
+    FOREIGN KEY (idRutina) REFERENCES Rutina(idRutina)
+);
 
+/*
 SHOW TABLES;
 DESCRIBE Cliente;
 DESCRIBE Pago;
@@ -160,3 +173,11 @@ SELECT * FROM Cliente;
 SELECT * FROM Pago;
 SELECT * FROM Rutina;
 SELECT * FROM Actividad;
+
+*/
+USE gimnasioDB;
+
+SELECT * FROM Cliente;
+SELECT * FROM Pago;
+SELECT * FROM Actividad;
+SELECT * FROM Rutina;
