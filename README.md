@@ -6,6 +6,7 @@ El sistema permite administrar clientes, actividades, pagos y rutinas, optimizan
 
 ## Autor
 **Jazmín Priscila Bustos**
+
 DNI 43.644.281
 
 ## Contenido del repositorio
