@@ -1,6 +1,6 @@
 package interfaz;
 
-import javafx.collections.FXCollections;
+import control.ActividadDAO;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
