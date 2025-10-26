@@ -1,0 +1,328 @@
+/* === ESTILOS GENERALES === */
+.root {
+    -fx-background-color: #303030; /* Fondo principal oscuro */
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-text-fill: #FFFFFF;
+}
+
+/* === PANELES Y FORMULARIOS === */
+.grid-pane, .vbox {
+    -fx-background-color: #505050;
+    -fx-border-color: #555555;
+    -fx-border-width: 1;
+    -fx-padding: 15;
+    -fx-background-radius: 6;
+}
+
+/* === LABELS Y TEXTOS === */
+.label {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 13px;
+}
+
+.text-field, .combo-box, .datepicker {
+    -fx-background-color: #505050;
+    -fx-text-fill: #FFFFFF;
+    -fx-border-color: #606060;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+
+/* === BOTONES === */
+/* === BOTONES PRINCIPALES DEL HOME === */
+.button-home {
+    -fx-background-color: #FFB067;  /* naranja pastel */
+    -fx-text-fill: #505050;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-background-radius: 20;
+    -fx-cursor: hand;
+    -fx-padding: 8 12 8 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0.5, 0, 2);
+}
+
+.button-home:hover {
+    -fx-background-color: #FF9A3D;
+}
+
+.button-positivo {
+    -fx-background-color: #7ACFA6;
+    -fx-text-fill: #303030;
+}
+
+.button-negativo {
+    -fx-background-color: #FF8C94;
+    -fx-text-fill: #FFFFFF;
+}
+/* === BOTONES PRINCIPALES REDONDOS (acciones rápidas) === */
+.button-principal {
+    -fx-background-color: #FFB067;  /* naranjita pastel */
+    -fx-text-fill: #303030;          /* gris oscuro para contraste */
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-background-radius: 50%;      /* forma circular */
+    -fx-min-width: 35px;
+    -fx-min-height: 35px;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 4, 0.5, 0, 2);
+    -fx-transition: 0.2s;
+}
+
+.button-principal:hover {
+    -fx-background-color: #FF9A3D;   /* más intenso al hover */
+}
+
+/* === BOTONES SECUNDARIOS (dentro de formularios) === */
+.button-secundario {
+    -fx-background-color: #505050; /* neutro gris */
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+    -fx-padding: 6 12 6 12;
+    -fx-cursor: hand;
+}
+
+.button-secundario:hover {
+    -fx-background-color: #606060;
+}
+
+/* Variante roja para botones de borrar */
+.button-secundario-rojo {
+    -fx-background-color: #FF6F61;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+    -fx-padding: 6 12 6 12;
+    -fx-cursor: hand;
+}
+.button-secundario-rojo:hover {
+    -fx-background-color: #FF4C4C;
+}
+
+/* === BOTONES SECUNDARIOS NARANJA (Registrar / Guardar cambios) === */
+.button-secundario-naranja {
+    -fx-background-color: #FFB067; /* naranjita pastel */
+    -fx-text-fill: #303030;         /* gris oscuro para contraste */
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+    -fx-padding: 6 12 6 12;
+    -fx-cursor: hand;
+}
+
+.button-secundario-naranja:hover {
+    -fx-background-color: #FF9A3D; /* tono más intenso al pasar el mouse */
+}
+
+/* === LISTA DE CLIENTES === */
+.list-view {
+    -fx-background-color: #303030;
+    -fx-control-inner-background: #303030;
+    -fx-cell-hover-color: #404040;
+    -fx-text-fill: #FFFFFF;
+}
+
+/* === TABLA DE PAGOS - MODO OSCURO === */
+.table-view {
+    -fx-background-color: #303030; /* fondo de la tabla */
+    -fx-control-inner-background: #303030;
+    -fx-table-cell-border-color: #505050;
+    -fx-text-background-color: #FFFFFF; /* texto de celdas */
+}
+
+/* === ENCABEZADO DE TABLA === */
+.table-view .column-header-background {
+    -fx-background-color: linear-gradient(to bottom, #FFB067, #E89E5C); /* fondo del header */
+}
+
+.table-view .column-header,
+.table-view .column-header .label {
+    -fx-text-fill: #2A2A2A;   /* texto más oscuro que blanco para modo oscuro */
+    -fx-font-weight: bold;
+}
+
+/* === TEXTO DE CELDAS === */
+.table-view .cell {
+    -fx-text-fill: #FFFFFF;
+}
+
+/* === SELECCIÓN DE FILA === */
+.table-view .table-row-cell:filled:selected,
+.table-view .table-row-cell:filled:selected:focused {
+    -fx-background-color: #FF9A3D;
+}
+
+.table-view .table-cell:filled:selected,
+.table-view .table-cell:filled:selected:focused {
+    -fx-text-fill: #303030;
+}
+
+/* === FORMULARIO DE CLIENTES === */
+.scroll-pane, .anchor-pane {
+    -fx-background: #383838;
+    -fx-background-color: #383838;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: #383838;
+}
+/* === SCROLLBARS SIMPLES - MODO OSCURO === */
+.scroll-bar {
+    -fx-background-color: #303030; /* mismo fondo que el programa */
+}
+
+/* Track del scrollbar */
+.scroll-bar .track {
+    -fx-background-color: #303030; /* fondo del track igual al root */
+    -fx-background-radius: 6;
+}
+
+/* Thumb del scrollbar */
+.scroll-bar .thumb {
+    -fx-background-color: #505050; /* un poco más claro que el fondo */
+    -fx-background-radius: 6;
+    -fx-pref-width: 16px;  /* ancho vertical */
+    -fx-pref-height: 16px; /* ancho horizontal */
+}
+
+/* Hover del thumb */
+.scroll-bar .thumb:hover {
+    -fx-background-color: #707070; /* más claro al pasar el mouse */
+}
+
+/* Scroll-pane */
+.scroll-pane {
+    -fx-background-color: #303030; /* mismo fondo que root */
+    -fx-border-color: transparent;
+}
+
+/* === DATEPICKER OSCURO - ESTILO POR DEFECTO DARK === */
+
+/* Contenedor del DatePicker */
+.date-picker {
+    -fx-background-color: #505050;
+    -fx-text-fill: #E0E0E0;
+    -fx-border-color: #555555;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+/* Icono de calendario */
+.date-picker .arrow-button {
+    -fx-background-color: #505050; /* mismo que el campo */
+    -fx-text-fill: #303030;         /* más oscuro, a tono con fondo general */
+    -fx-padding: 6;
+    -fx-cursor: hand;
+    -fx-scale-shape: true;
+}
+
+/* Campo de texto interno */
+.date-picker .text-field {
+    -fx-background-color: #505050;
+    -fx-text-fill: #E0E0E0;
+    -fx-border-color: #555555;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 4 8 4 8;
+}
+
+/* Popup del calendario */
+.date-picker-popup {
+    -fx-background-color: #383838;
+    -fx-border-color: #505050;
+    -fx-border-width: 1;
+    -fx-background-radius: 4;
+}
+
+/* Encabezado mes/año */
+.date-picker-popup .month-year-pane {
+    -fx-background-color: #383838;
+    -fx-text-fill: #E0E0E0;
+    -fx-font-weight: bold;
+}
+
+/* Botones spinner de mes/año */
+.date-picker-popup .spinner .button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #E0E0E0;
+}
+
+/* Encabezado días (LUN, MAR...) */
+.date-picker-popup .day-cell .day-name {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-weight: bold;
+    -fx-background-color: #383838;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-cursor: default;
+}
+
+/* Días del mes */
+.date-cell {
+    -fx-background-color: #383838;
+    -fx-text-fill: #E0E0E0;
+    -fx-alignment: center;
+    -fx-padding: 5;
+    -fx-border-color: #383838; /* invisibles */
+}
+
+/* Hover sobre días del mes */
+.date-cell:filled:hover {
+    -fx-background-color: #505050;
+}
+
+/* Días seleccionados con subrayado */
+.date-cell:selected {
+    -fx-background-color: transparent; /* sin cambiar fondo */
+    -fx-text-fill: #E0E0E0;            /* mantiene texto normal */
+    -fx-underline: true;               /* subrayado */
+}
+
+/* Días fuera del mes */
+.date-cell:empty, .date-cell:outside-month {
+    -fx-background-color: #2C2C2C;
+    -fx-text-fill: #AAAAAA;
+    -fx-opacity: 1;
+    -fx-cursor: default;
+}
+
+/* Deshabilitar hover en días fuera del mes */
+.date-cell:outside-month:hover, .date-cell:empty:hover {
+    -fx-background-color: #2C2C2C;
+}
+
+.list-cell {
+    -fx-background-color: #303030;
+    -fx-text-fill: #FFFFFF;  /* texto blanco */
+    -fx-font-size: 13px;
+}
+
+/* Hover sobre los ítems de la lista */
+.list-cell:hover {
+    -fx-background-color: #404040;
+}
+
+/* Ítem seleccionado */
+.list-cell:selected {
+    -fx-background-color: #505050; /* naranjita pastel */
+    -fx-text-fill: #FFFFFF;        /* texto oscuro para contraste */
+
+}
+
+/* === TextArea descripción en formulario Rutina === */
+.text-area {
+    -fx-background-color: #505050; /* Fondo general */
+    -fx-border-color: #606060;
+    -fx-border-radius: 4;
+    -fx-text-fill: #FFFFFF;
+}
+
+/* Aplica al contenido interno donde se escribe */
+.text-area .content {
+    -fx-background-color: #505050;
+    -fx-text-fill: #FFFFFF;
+}
