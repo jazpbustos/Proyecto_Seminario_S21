@@ -181,3 +181,20 @@ SELECT * FROM Cliente;
 SELECT * FROM Pago;
 SELECT * FROM Actividad;
 SELECT * FROM Rutina;
+SELECT * FROM Ejercicio;
+
+SET SQL_SAFE_UPDATES = 0;
+DELETE FROM Pago;
+DELETE FROM Cliente;
+SET SQL_SAFE_UPDATES = 1;
+
+-- Reiniciar los contadores AUTO_INCREMENT (para que los IDs arranquen de nuevo en 1)
+ALTER TABLE Pago AUTO_INCREMENT = 1;
+ALTER TABLE Cliente AUTO_INCREMENT = 1;
+
+
+ALTER TABLE Cliente
+ADD COLUMN actividad VARCHAR(50),
+ADD COLUMN idRutina INT,
+ADD COLUMN estadoPago VARCHAR(20),
+ADD FOREIGN KEY (idRutina) REFERENCES Rutina(idRutina);

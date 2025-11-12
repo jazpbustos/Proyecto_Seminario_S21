@@ -36,4 +36,10 @@ public class Ejercicio {
     public String toString() {
         return "Día " + dia + ": " + nombre + " " + series + "x" + reps;
     }
+
+    public void setNotasSemanales(ArrayList<Object> objects) {
+    }
+
+    public void setSemanas(int semanas) {
+    }
 }

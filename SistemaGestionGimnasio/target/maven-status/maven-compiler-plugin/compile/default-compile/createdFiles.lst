@@ -13,6 +13,7 @@ interfaz\ClientesController$Cliente.class
 control\RutinaDAO.class
 interfaz\DBConnection.class
 interfaz\GestionGimnasio.class
+interfaz\ClientesController$3.class
 com\gimnasio\Main.class
 entidad\Pagos.class
 interfaz\ActividadesController$Actividad.class
@@ -24,4 +25,5 @@ control\ControlActividades.class
 interfaz\PagosController$Pago.class
 control\ControlClientes.class
 entidad\Ejercicio.class
+interfaz\ClientesController$2.class
 interfaz\TestDB.class

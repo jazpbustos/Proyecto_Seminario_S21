@@ -1,6 +1,7 @@
 package interfaz;
 
 import control.PagoDAO;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -20,15 +21,18 @@ import java.time.format.DateTimeFormatter;
 public class PagosController {
 
     public static class Pago {
-        private String clienteNombre;
+        private String nombre;
+        private String apellido;
         private String dni;
         private LocalDate fecha;
         private String actividad;
         private double monto;
-        private String estado; // "Pagado" o "Adeuda"
+        private String estado;
 
-        public Pago(String clienteNombre, String dni, LocalDate fecha, String actividad, double monto, String estado) {
-            this.clienteNombre = clienteNombre;
+        public Pago(String nombre, String apellido, String dni, LocalDate fecha,
+                    String actividad, double monto, String estado) {
+            this.nombre = nombre;
+            this.apellido = apellido;
             this.dni = dni;
             this.fecha = fecha;
             this.actividad = actividad;
@@ -36,7 +40,8 @@ public class PagosController {
             this.estado = estado;
         }
 
-        public String getClienteNombre() { return clienteNombre; }
+        public String getNombre() { return nombre; }
+        public String getApellido() { return apellido; }
         public String getDni() { return dni; }
         public LocalDate getFecha() { return fecha; }
         public String getActividad() { return actividad; }
@@ -49,22 +54,12 @@ public class PagosController {
 
         TableView<Pago> tablaPagos = new TableView<>();
 
-        // Columna Cliente — muestra “Apellido, Nombre”
+        // Columna Cliente
         TableColumn<Pago, String> colCliente = new TableColumn<>("Cliente");
-        colCliente.setCellValueFactory(c -> {
-            String nombreCompleto = c.getValue().getClienteNombre();
-            if (nombreCompleto == null || nombreCompleto.isBlank()) {
-                return new javafx.beans.property.SimpleStringProperty("");
-            }
-            String[] partes = nombreCompleto.trim().split(" ");
-            if (partes.length >= 2) {
-                String nombre = partes[0];
-                String apellido = partes[partes.length - 1];
-                return new javafx.beans.property.SimpleStringProperty(apellido + ", " + nombre);
-            } else {
-                return new javafx.beans.property.SimpleStringProperty(nombreCompleto);
-            }
-        });
+        colCliente.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().getApellido() + ", " + c.getValue().getNombre())
+        );
+
 
         // Comparador natural para ordenar bien (ignora mayúsculas y tildes)
         colCliente.setComparator((n1, n2) -> {
@@ -101,8 +96,8 @@ public class PagosController {
                     setStyle("");
                 } else {
                     setText(item);
-                    if (item.equalsIgnoreCase("Pagado")) {
-                        setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+                    if (item.equalsIgnoreCase("Pagó")) {
+                        setStyle("-fx-text-fill: green !important; -fx-font-weight: bold;");
                     } else if (item.equalsIgnoreCase("Adeuda")) {
                         setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
                     } else {
@@ -123,7 +118,7 @@ public class PagosController {
         TextField tfBuscar = new TextField();
         tfBuscar.setPromptText("Buscar por nombre o DNI...");
 
-        ComboBox<String> cbEstado = new ComboBox<>(FXCollections.observableArrayList("Todos", "Pagado", "Adeuda"));
+        ComboBox<String> cbEstado = new ComboBox<>(FXCollections.observableArrayList("Todos", "Pagó", "Adeuda"));
         cbEstado.setValue("Todos");
 
         Label lblDesde = new Label("Desde:");
@@ -140,29 +135,9 @@ public class PagosController {
         Button btnReset = new Button("Limpiar Filtros");
         btnReset.getStyleClass().add("button-secundario");
 
-        Runnable aplicarFiltros = () -> {
-            String filtroTexto = tfBuscar.getText().toLowerCase();
-            String estadoSel = cbEstado.getValue();
-            LocalDate desde = dpDesde.getValue();
-            LocalDate hasta = dpHasta.getValue();
-
-            pagosFiltrados.setPredicate(p -> {
-                boolean coincideTexto = p.getClienteNombre().toLowerCase().contains(filtroTexto)
-                        || p.getDni().toLowerCase().contains(filtroTexto);
-                boolean coincideEstado = estadoSel.equals("Todos") || p.getEstado().equalsIgnoreCase(estadoSel);
-                boolean coincideFecha = true;
-                if (desde != null && hasta != null) {
-                    coincideFecha = !p.getFecha().isBefore(desde) && !p.getFecha().isAfter(hasta);
-                }
-                return coincideTexto && coincideEstado && coincideFecha;
-            });
-        };
-
-        tfBuscar.textProperty().addListener((obs, old, nuevo) -> aplicarFiltros.run());
-        cbEstado.setOnAction(e -> aplicarFiltros.run());
-        btnFiltrar.setOnAction(e -> aplicarFiltros.run());
-
-        // 🔹 Ordenar por nombre asc/desc
+        // ────────────────────────────────
+        // ORDENAR POR NOMBRE ASC / DESC
+        // ────────────────────────────────
         btnOrdenAsc.setOnAction(e -> {
             tablaPagos.getSortOrder().clear();
             colCliente.setSortType(TableColumn.SortType.ASCENDING);
@@ -177,6 +152,9 @@ public class PagosController {
             tablaPagos.sort();
         });
 
+        // ────────────────────────────────
+        // LIMPIAR FILTROS
+        // ────────────────────────────────
         btnReset.setOnAction(e -> {
             dpDesde.setValue(null);
             dpHasta.setValue(null);
@@ -186,6 +164,9 @@ public class PagosController {
             tablaPagos.getSortOrder().clear();
         });
 
+        // ────────────────────────────────
+        // BOTÓN VOLVER
+        // ────────────────────────────────
         Button btnVolver = new Button();
         btnVolver.getStyleClass().add("button-principal");
         ImageView iconVolver = new ImageView(new Image(ClientesController.class.getResourceAsStream("/icons/arrow-left.png")));
@@ -203,16 +184,120 @@ public class PagosController {
             }
         });
 
+        // ────────────────────────────────
+        // LAYOUT FINAL
+        // ────────────────────────────────
         HBox filtrosFecha = new HBox(10, lblDesde, dpDesde, lblHasta, dpHasta, btnFiltrar, btnOrdenAsc, btnOrdenDesc, btnReset);
         HBox filtrosEstado = new HBox(10, new Label("Estado:"), cbEstado);
-        VBox root = new VBox(10, btnVolver, tfBuscar, filtrosEstado, filtrosFecha, tablaPagos);
+
+
+        // ────────────────────────────────
+// Labels para totales (debajo de la tabla)
+        Label lblTotalRecaudado = new Label("Total recaudado: $0.00");
+        Label lblTotalAdeudado = new Label("Total adeudado: $0.00");
+        lblTotalRecaudado.getStyleClass().add("label-total"); // opcional: dale estilo en tu CSS
+        lblTotalAdeudado.getStyleClass().add("label-total");
+
+// Método para actualizar totales basado en los items actualmente visibles en la tabla
+        Runnable actualizarTotales = () -> {
+            double totalRecaudado = 0.0;
+            double totalAdeudado = 0.0;
+
+            // Usamos los items visibles de la tabla (ya vienen filtrados/ordenados)
+            for (Pago p : tablaPagos.getItems()) {
+                if (p.getEstado() != null) {
+                    String est = p.getEstado().trim().toLowerCase();
+                    if (est.equals("pagado") || est.equals("pagó") /*por si guardaron con tilde*/) {
+                        totalRecaudado += p.getMonto();
+                    } else if (est.equals("adeuda") || est.equals("deuda") || est.equals("adeudado")) {
+                        totalAdeudado += p.getMonto();
+                    }
+                }
+            }
+
+            // Formateo sencillo a moneda (dos decimales). Si querés locale argentino, lo cambiamos.
+            String recaudadoStr = String.format("$%.2f", totalRecaudado);
+            String adeudadoStr = String.format("$%.2f", totalAdeudado);
+
+            lblTotalRecaudado.setText("Total recaudado: " + recaudadoStr);
+            lblTotalAdeudado.setText("Total adeudado: " + adeudadoStr);
+        };
+
+// ────────────────────────────────
+// FILTROS Y BÚSQUEDAS (version actualizada para que también llame a actualizarTotales)
+// ────────────────────────────────
+        Runnable aplicarFiltros = () -> {
+            String filtroTexto = tfBuscar.getText() == null ? "" : tfBuscar.getText().toLowerCase();
+            String estadoSel = cbEstado.getValue();
+            LocalDate desde = dpDesde.getValue();
+            LocalDate hasta = dpHasta.getValue();
+
+            pagosFiltrados.setPredicate(p -> {
+                // Si filtro vacío, mostramos todo
+                if (p == null) return false;
+
+                // 🔹 Coincidencia por nombre, apellido o DNI
+                boolean coincideTexto =
+                        p.getNombre() != null && p.getNombre().toLowerCase().contains(filtroTexto) ||
+                                p.getApellido() != null && p.getApellido().toLowerCase().contains(filtroTexto) ||
+                                (p.getApellido() + " " + p.getNombre()).toLowerCase().contains(filtroTexto) ||
+                                (p.getDni() != null && p.getDni().toLowerCase().contains(filtroTexto));
+
+                // 🔹 Coincidencia por estado
+                boolean coincideEstado = estadoSel == null || estadoSel.equals("Todos") || p.getEstado().equalsIgnoreCase(estadoSel);
+
+                // 🔹 Coincidencia por fecha
+                boolean coincideFecha = true;
+                if (desde != null && hasta != null && p.getFecha() != null) {
+                    coincideFecha = !p.getFecha().isBefore(desde) && !p.getFecha().isAfter(hasta);
+                }
+
+                return coincideTexto && coincideEstado && coincideFecha;
+            });
+
+            // después de aplicar predicate, actualizamos totales
+            actualizarTotales.run();
+        };
+
+// eventos que disparan filtros y totales
+        tfBuscar.textProperty().addListener((obs, old, nuevo) -> aplicarFiltros.run());
+        cbEstado.setOnAction(e -> aplicarFiltros.run());
+        btnFiltrar.setOnAction(e -> aplicarFiltros.run());
+        btnReset.setOnAction(e -> {
+            dpDesde.setValue(null);
+            dpHasta.setValue(null);
+            cbEstado.setValue("Todos");
+            tfBuscar.clear();
+            pagosFiltrados.setPredicate(p -> true);
+            tablaPagos.getSortOrder().clear();
+            actualizarTotales.run();
+        });
+
+// Además, si la lista visible cambia por otras razones, mantenemos los totales sincronizados
+        tablaPagos.getItems().addListener((javafx.collections.ListChangeListener<Pago>) change -> actualizarTotales.run());
+
+// Llamada inicial para mostrar totales al abrir la ventana
+        actualizarTotales.run();
+
+// ────────────────────────────────
+// Colocamos los labels en la interfaz (debajo de la tabla)
+// ────────────────────────────────
+        HBox totalsBox = new HBox(40, lblTotalRecaudado, lblTotalAdeudado);
+        totalsBox.setPadding(new Insets(10, 20, 10, 20));
+        totalsBox.setStyle("-fx-alignment: center-right; -fx-background-color: #303030; -fx-font-weight: bold;");
+
+        VBox root = new VBox(10, btnVolver, tfBuscar, filtrosEstado, filtrosFecha, tablaPagos, totalsBox);
         root.setPadding(new Insets(10));
 
         Scene scene = new Scene(root, 950, 550);
         scene.getStylesheets().add(PagosController.class.getResource("/estilos.css").toExternalForm());
         stage.setScene(scene);
+
+        actualizarTotales.run();
     }
 }
+
+
 
 
 

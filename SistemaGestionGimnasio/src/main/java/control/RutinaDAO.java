@@ -10,29 +10,29 @@ import java.sql.*;
 
 public class RutinaDAO {
 
-    // Insertar rutina
     public static void insertarRutina(Rutinas r) {
-        String sqlRutina = "INSERT INTO Rutina (idRutina, nombre, descripcion, fechaInicio, fechaFin) VALUES (?, ?, ?, ?, ?)";
+        String sqlRutina = "INSERT INTO Rutina (nombre, descripcion, fechaInicio, fechaFin) VALUES (?, ?, ?, ?)";
         String sqlEjercicio = "INSERT INTO Ejercicio (idRutina, nombre, series, reps, dia) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement psRutina = conn.prepareStatement(sqlRutina);
+             PreparedStatement psRutina = conn.prepareStatement(sqlRutina, Statement.RETURN_GENERATED_KEYS);
              PreparedStatement psEj = conn.prepareStatement(sqlEjercicio)) {
 
-            // Insertar rutina
-            psRutina.setInt(1, r.getIdRutina());
-            psRutina.setString(2, r.getNombre());
-            psRutina.setString(3, r.getDescripcion());
-            psRutina.setDate(4, r.getFechaInicio() != null ? Date.valueOf(r.getFechaInicio()) : null);
-            psRutina.setDate(5, r.getFechaFin() != null ? Date.valueOf(r.getFechaFin()) : null);
+            psRutina.setString(1, r.getNombre());
+            psRutina.setString(2, r.getDescripcion());
+            psRutina.setDate(3, r.getFechaInicio() != null ? Date.valueOf(r.getFechaInicio()) : null);
+            psRutina.setDate(4, r.getFechaFin() != null ? Date.valueOf(r.getFechaFin()) : null);
             psRutina.executeUpdate();
 
-            // Insertar ejercicios
+            try (ResultSet rs = psRutina.getGeneratedKeys()) {
+                if (rs.next()) r.setIdRutina(rs.getInt(1));
+            }
+
             for (Ejercicio e : r.getEjercicios()) {
                 psEj.setInt(1, r.getIdRutina());
                 psEj.setString(2, e.getNombre());
                 psEj.setInt(3, e.getSeries());
                 psEj.setInt(4, e.getReps());
-                psEj.setInt(5, e.getDia()); // NUEVO: guardar día
+                psEj.setInt(5, e.getDia());
                 psEj.executeUpdate();
             }
 
@@ -40,35 +40,32 @@ public class RutinaDAO {
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    // Actualizar rutina
     public static void actualizarRutina(Rutinas r) {
-        String sqlRutina = "UPDATE Rutina SET descripcion=?, fechaInicio=?, fechaFin=? WHERE idRutina=?";
+        String sqlRutina = "UPDATE Rutina SET nombre=?, descripcion=?, fechaInicio=?, fechaFin=? WHERE idRutina=?";
         String sqlBorrarEj = "DELETE FROM Ejercicio WHERE idRutina=?";
-        String sqlInsertarEj = "INSERT INTO Ejercicio (idRutina, nombre, series, reps, dia) VALUES (?, ?, ?, ?, ?)";
+        String sqlInsertEj = "INSERT INTO Ejercicio (idRutina, nombre, series, reps, dia) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement psRutina = conn.prepareStatement(sqlRutina);
              PreparedStatement psBorrarEj = conn.prepareStatement(sqlBorrarEj);
-             PreparedStatement psInsertEj = conn.prepareStatement(sqlInsertarEj)) {
+             PreparedStatement psInsertEj = conn.prepareStatement(sqlInsertEj)) {
 
-            // Actualizar datos generales
-            psRutina.setString(1, r.getDescripcion());
-            psRutina.setDate(2, r.getFechaInicio() != null ? Date.valueOf(r.getFechaInicio()) : null);
-            psRutina.setDate(3, r.getFechaFin() != null ? Date.valueOf(r.getFechaFin()) : null);
-            psRutina.setInt(4, r.getIdRutina());
+            psRutina.setString(1, r.getNombre());
+            psRutina.setString(2, r.getDescripcion());
+            psRutina.setDate(3, r.getFechaInicio() != null ? Date.valueOf(r.getFechaInicio()) : null);
+            psRutina.setDate(4, r.getFechaFin() != null ? Date.valueOf(r.getFechaFin()) : null);
+            psRutina.setInt(5, r.getIdRutina());
             psRutina.executeUpdate();
 
-            // Borrar ejercicios antiguos
             psBorrarEj.setInt(1, r.getIdRutina());
             psBorrarEj.executeUpdate();
 
-            // Insertar ejercicios nuevos
             for (Ejercicio e : r.getEjercicios()) {
                 psInsertEj.setInt(1, r.getIdRutina());
                 psInsertEj.setString(2, e.getNombre());
                 psInsertEj.setInt(3, e.getSeries());
                 psInsertEj.setInt(4, e.getReps());
-                psInsertEj.setInt(5, e.getDia()); // NUEVO: guardar día
+                psInsertEj.setInt(5, e.getDia());
                 psInsertEj.executeUpdate();
             }
 
@@ -76,7 +73,6 @@ public class RutinaDAO {
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    // Borrar rutina
     public static void borrarRutina(int idRutina) {
         String sqlEj = "DELETE FROM Ejercicio WHERE idRutina=?";
         String sqlRut = "DELETE FROM Rutina WHERE idRutina=?";
@@ -94,7 +90,6 @@ public class RutinaDAO {
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    // Listar rutinas
     public static ObservableList<Rutinas> listarRutinas() {
         ObservableList<Rutinas> lista = FXCollections.observableArrayList();
         String sqlRutina = "SELECT * FROM Rutina";
@@ -112,7 +107,6 @@ public class RutinaDAO {
                         rsRut.getDate("fechaInicio") != null ? rsRut.getDate("fechaInicio").toLocalDate() : null,
                         rsRut.getDate("fechaFin") != null ? rsRut.getDate("fechaFin").toLocalDate() : null);
 
-                // Obtener ejercicios
                 psEj.setInt(1, id);
                 try (ResultSet rsEj = psEj.executeQuery()) {
                     while (rsEj.next()) {
@@ -120,7 +114,7 @@ public class RutinaDAO {
                                 rsEj.getString("nombre"),
                                 rsEj.getInt("series"),
                                 rsEj.getInt("reps"),
-                                rsEj.getInt("dia"), // NUEVO: leer día
+                                rsEj.getInt("dia"),
                                 r.getSemanas()
                         );
                         r.agregarEjercicio(e);
@@ -133,3 +127,4 @@ public class RutinaDAO {
         return lista;
     }
 }
+

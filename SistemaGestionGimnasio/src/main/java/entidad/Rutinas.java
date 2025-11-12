@@ -51,6 +51,9 @@ public class Rutinas {
     public int getSemanas() { return semanas; }
     public List<Ejercicio> getEjercicios() { return ejercicios; }
 
+    public void setIdRutina(int idRutina) { this.idRutina = idRutina; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
     public void setFechaInicio(LocalDate fechaInicio) { this.fechaInicio = fechaInicio; }
     public void setFechaFin(LocalDate fechaFin) { this.fechaFin = fechaFin; }
 

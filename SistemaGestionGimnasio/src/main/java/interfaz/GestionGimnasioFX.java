@@ -9,7 +9,8 @@ import javafx.stage.Stage;
 
 public class GestionGimnasioFX extends Application {
 
-    private String nombreUsuario = "Admin"; //Más adelante viene del login
+    private String nombreUsuario = "Admin";
+    private Stage stageClientes; // <-- variable de clase
 
     @Override
     public void start(Stage stage) {
@@ -19,6 +20,7 @@ public class GestionGimnasioFX extends Application {
         Button btnClientes = new Button("Clientes");
         btnClientes.getStyleClass().add("button-home");
         btnClientes.setOnAction(e -> ClientesController.mostrarClientes(stage));
+
 
         Button btnPagos = new Button("Pagos");
         btnPagos.getStyleClass().add("button-home");
