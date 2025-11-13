@@ -176,6 +176,7 @@ public class RutinasController {
         listaRutinas.getSelectionModel().selectedItemProperty().addListener((obs,o,s)-> btnEditar.setDisable(s==null));
 
         btnNuevo.setOnAction(event -> {
+            listaRutinas.getSelectionModel().clearSelection();
             ficha.setVisible(true);
             btnGuardar.setText("Registrar Rutina");
             tfNombre.clear(); taDescripcion.clear(); dpInicio.setValue(null); dpFin.setValue(null);

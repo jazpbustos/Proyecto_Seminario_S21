@@ -109,6 +109,7 @@ public class ActividadesController {
         listaActividades.getSelectionModel().selectedItemProperty().addListener((obs, o, s) -> btnEditar.setDisable(s == null));
 
         btnNuevo.setOnAction(e -> {
+            listaActividades.getSelectionModel().clearSelection();
             ficha.setVisible(true);
             btnGuardar.setText("Registrar Actividad");
             tfNombre.clear(); tfPrecio.clear(); tfDuracion.clear();

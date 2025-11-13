@@ -22,6 +22,8 @@ import javafx.util.StringConverter;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class ClientesController {
 
@@ -65,6 +67,14 @@ public class ClientesController {
         public void setEdad(int edad) { this.edad = edad; }
         public int getDuracion() { return duracion; }
         public void setDuracion(int duracion) { this.duracion = duracion; }
+    }
+
+    private static String capitalizar(String texto) {
+        if (texto == null || texto.isBlank()) return texto;
+        return Arrays.stream(texto.trim().toLowerCase().split(" "))
+                .filter(p -> !p.isBlank())
+                .map(p -> Character.toUpperCase(p.charAt(0)) + p.substring(1))
+                .collect(Collectors.joining(" "));
     }
 
     public static void mostrarClientes(Stage stage) {
@@ -270,6 +280,7 @@ public class ClientesController {
 
 // --- NUEVO CLIENTE ---
         btnNuevo.setOnAction(e -> {
+            listaClientes.getSelectionModel().clearSelection();
             ficha.setVisible(true);
             btnGuardar.setText("Registrar Cliente");
             tfNombre.clear(); tfApellido.clear(); tfDNI.clear(); tfCelular.clear(); tfCorreo.clear();
@@ -337,7 +348,11 @@ public class ClientesController {
                     String precio = actSel != null ? String.valueOf(actSel.getPrecio()) : tfPrecio.getText();
                     int duracion = actSel != null ? actSel.getDuracion() : Integer.parseInt(tfDuracion.getText().isEmpty() ? "30" : tfDuracion.getText());
 
-                    Cliente nuevo = new Cliente(tfNombre.getText(), tfApellido.getText(), tfDNI.getText());
+                    Cliente nuevo = new Cliente(
+                            capitalizar(tfNombre.getText()),
+                            capitalizar(tfApellido.getText()),
+                            tfDNI.getText()
+                    );
                     nuevo.setCelular(tfCelular.getText());
                     nuevo.setCorreo(tfCorreo.getText());
                     nuevo.setFechaNac(dpFechaNac.getValue());
@@ -360,8 +375,8 @@ public class ClientesController {
                 } else { // Editar cliente
                     Cliente sel = listaClientes.getSelectionModel().getSelectedItem();
                     if (sel != null) {
-                        sel.setNombre(tfNombre.getText());
-                        sel.setApellido(tfApellido.getText());
+                        sel.setNombre(capitalizar(tfNombre.getText()));
+                        sel.setApellido(capitalizar(tfApellido.getText()));
                         sel.setCelular(tfCelular.getText());
                         sel.setCorreo(tfCorreo.getText());
                         sel.setFechaNac(dpFechaNac.getValue());
@@ -393,13 +408,19 @@ public class ClientesController {
 // --- REGISTRAR PAGO MANUAL ---
         btnRegistrarPago.setOnAction(e -> {
             try {
-                // Validar que haya datos mínimos
+                // Validar datos mínimos
                 if (tfNombre.getText().isBlank() || tfApellido.getText().isBlank() || tfDNI.getText().isBlank()) {
                     new Alert(Alert.AlertType.WARNING, "Completá al menos nombre, apellido y DNI antes de registrar el pago.").showAndWait();
                     return;
                 }
 
-                // Buscar si el cliente ya existe en la lista
+                // Normalizar nombre y apellido
+                String nombreCap = capitalizar(tfNombre.getText());
+                String apellidoCap = capitalizar(tfApellido.getText());
+                tfNombre.setText(nombreCap);
+                tfApellido.setText(apellidoCap);
+
+                // Buscar si el cliente ya existe
                 Cliente sel = listaClientes.getSelectionModel().getSelectedItem();
                 Cliente existente = clientes.stream()
                         .filter(c -> c.getDni().equals(tfDNI.getText()))
@@ -423,13 +444,12 @@ public class ClientesController {
                 String actividad = act != null ? act.getNombre() : (sel != null ? sel.getActividad() : "");
                 double monto = act != null ? act.getPrecio() :
                         (!tfPrecio.getText().isBlank() ? Double.parseDouble(tfPrecio.getText()) : 0);
-
                 int duracion = act != null ? act.getDuracion() :
                         (!tfDuracion.getText().isBlank() ? Integer.parseInt(tfDuracion.getText()) : 30);
 
                 // --- Crear o actualizar cliente ---
                 if (sel == null && existente == null) {
-                    Cliente nuevo = new Cliente(tfNombre.getText(), tfApellido.getText(), tfDNI.getText());
+                    Cliente nuevo = new Cliente(nombreCap, apellidoCap, tfDNI.getText());
                     nuevo.setCelular(tfCelular.getText());
                     nuevo.setCorreo(tfCorreo.getText());
                     nuevo.setFechaNac(dpFechaNac.getValue());
@@ -450,9 +470,11 @@ public class ClientesController {
 
                     ClienteDAO.insertarCliente(nuevo);
                     clientes.add(nuevo);
-                    sel = nuevo; // lo usamos para registrar el pago
+                    sel = nuevo; // usar para registrar el pago
                 } else {
-                    if (sel == null) sel = existente; // si lo seleccionamos recién creado
+                    if (sel == null) sel = existente;
+                    sel.setNombre(nombreCap);
+                    sel.setApellido(apellidoCap);
                     sel.setActividad(actividad);
                     sel.setPrecio(String.valueOf(monto));
                     sel.setDuracion(duracion);
@@ -469,7 +491,7 @@ public class ClientesController {
 
                 listaClientes.refresh();
 
-                // --- Crear o actualizar pago ---
+                // --- Crear el pago ---
                 PagosController.Pago pago = new PagosController.Pago(
                         sel.getNombre(),
                         sel.getApellido(),
@@ -480,12 +502,28 @@ public class ClientesController {
                         estadoPago
                 );
 
-                boolean actualizado = PagoDAO.insertarPagoYDetectar(pago);
+                // --- NUEVA LÓGICA: detectar pago existente en misma fecha ---
+                if (PagoDAO.existePagoEnFecha(sel.getDni(), fechaPago)) {
+                    Alert decision = new Alert(Alert.AlertType.CONFIRMATION);
+                    decision.setTitle("Pago existente");
+                    decision.setHeaderText("Ya hay un pago registrado el " + fechaPago + " para " + sel.getNombre() + " " + sel.getApellido());
+                    decision.setContentText("¿Querés actualizar el pago existente (por cambio de actividad/monto)?\n\n"
+                            + "Sí = Actualiza el pago existente\nNo = Crea un nuevo registro");
+                    decision.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
 
-                if (actualizado) {
-                    new Alert(Alert.AlertType.INFORMATION,
-                            "Se actualizó el pago existente de " + sel.getNombre() + " " + sel.getApellido()).showAndWait();
+                    decision.showAndWait();
+
+                    if (decision.getResult() == ButtonType.YES) {
+                        PagoDAO.actualizarPagoExistente(pago);
+                        new Alert(Alert.AlertType.INFORMATION, "Pago actualizado correctamente.").showAndWait();
+                    } else if (decision.getResult() == ButtonType.NO) {
+                        PagoDAO.insertarPago(pago);
+                        new Alert(Alert.AlertType.INFORMATION, "Se creó un nuevo registro de pago.").showAndWait();
+                    } else {
+                        return; // cancelado
+                    }
                 } else {
+                    PagoDAO.insertarPago(pago);
                     new Alert(Alert.AlertType.INFORMATION,
                             "Pago registrado exitosamente para " + sel.getNombre() + " " + sel.getApellido()).showAndWait();
                 }
@@ -494,8 +532,10 @@ public class ClientesController {
 
             } catch (Exception ex) {
                 new Alert(Alert.AlertType.ERROR, "Error al registrar pago: " + ex.getMessage()).showAndWait();
+                ex.printStackTrace();
             }
         });
+
 
 
 
