@@ -326,3 +326,31 @@
     -fx-background-color: #505050;
     -fx-text-fill: #FFFFFF;
 }
+
+/* ─────────────── LOGIN ─────────────── */
+.logo-login {
+    -fx-translate-y: -20;           /* Sube un poco el logo si hay mucho espacio */
+    -fx-padding: 0 0 5 0;          /* Ajusta el espacio inferior (bottom) */
+}
+
+.titulo-login {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-padding: -150 0 -50 0;       /* Acerca el título al logo */
+}
+
+/* Sube solo el formulario (campos y botón) */
+.form-login {
+    -fx-translate-y: -30;   /* sube el bloque */
+    -fx-spacing: 15;
+    -fx-alignment: center;
+}
+
+.boton-login {
+    -fx-background-color: linear-gradient(#ffb35e, #f68a32);
+    -fx-background-radius: 10;
+    -fx-font-weight: bold;
+}
+.boton-login:hover {
+    -fx-background-color: linear-gradient(#e9a355, #d4752b);
+}

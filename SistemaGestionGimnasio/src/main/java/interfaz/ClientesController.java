@@ -5,6 +5,8 @@ import control.ClienteDAO;
 import control.PagoDAO;
 import control.RutinaDAO;
 import entidad.Rutinas;
+import entidad.Sesion;
+import entidad.Usuario;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -19,6 +21,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import utils.VentanaUtils;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -128,14 +131,21 @@ public class ClientesController {
         btnVolver.setGraphic(iconVolver);
         btnVolver.setOnAction(e -> {
             try {
-                Stage stageMenu = new Stage();
+                Usuario usuario = Sesion.getUsuarioActual();
+
+                // Reutilizamos el Stage actual del módulo
+                Stage stageActual = (Stage) btnVolver.getScene().getWindow();
+
                 GestionGimnasioFX menu = new GestionGimnasioFX();
-                menu.start(stageMenu);
-                stage.close();
+                menu.mostrarVentanaPrincipal(stageActual, usuario); // <-- pasamos el Stage actual
+
+                // NO necesitamos stage.close(); porque estamos reutilizando
+                // stageActual.setScene(...) dentro de mostrarVentanaPrincipal
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         });
+
 
 
         // --- FICHA ---
@@ -536,11 +546,6 @@ public class ClientesController {
             }
         });
 
-
-
-
-
-
         // --- BORRAR CLIENTE ---
         btnBorrar.setOnAction(e -> {
             Cliente sel = listaClientes.getSelectionModel().getSelectedItem();
@@ -564,6 +569,7 @@ public class ClientesController {
         Scene scene = new Scene(main, 1000, 600);
         scene.getStylesheets().add(ClientesController.class.getResource("/estilos.css").toExternalForm());
         stage.setScene(scene);
+        VentanaUtils.centrar(stage);
     }
 
     private static Button crearBotonConIcono(String rutaIcono) {

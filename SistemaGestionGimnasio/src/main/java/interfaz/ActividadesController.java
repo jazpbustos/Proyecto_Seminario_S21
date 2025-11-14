@@ -1,6 +1,8 @@
 package interfaz;
 
 import control.ActividadDAO;
+import entidad.Sesion;
+import entidad.Usuario;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -9,6 +11,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import utils.VentanaUtils;
 
 public class ActividadesController {
 
@@ -76,12 +79,21 @@ public class ActividadesController {
         btnVolver.setGraphic(iconVolver);
         btnVolver.setOnAction(e -> {
             try {
-                Stage stageMenu = new Stage();
+                Usuario usuario = Sesion.getUsuarioActual();
+
+                // Reutilizamos el Stage actual del módulo
+                Stage stageActual = (Stage) btnVolver.getScene().getWindow();
+
                 GestionGimnasioFX menu = new GestionGimnasioFX();
-                menu.start(stageMenu);
-                stage.close();
-            } catch (Exception ex) { ex.printStackTrace(); }
+                menu.mostrarVentanaPrincipal(stageActual, usuario); // <-- pasamos el Stage actual
+
+                // NO necesitamos stage.close(); porque estamos reutilizando
+                // stageActual.setScene(...) dentro de mostrarVentanaPrincipal
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         });
+
 
         // ================== FORMULARIO ==================
         GridPane ficha = new GridPane();
@@ -180,5 +192,6 @@ public class ActividadesController {
         Scene scene = new Scene(main, 700, 400);
         scene.getStylesheets().add(ActividadesController.class.getResource("/estilos.css").toExternalForm());
         stage.setScene(scene);
+        VentanaUtils.centrar(stage);
     }
 }

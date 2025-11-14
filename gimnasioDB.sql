@@ -175,6 +175,10 @@ SELECT * FROM Rutina;
 SELECT * FROM Actividad;
 
 */
+
+-- ======================
+-- Usos y consultas
+-- ======================
 USE gimnasioDB;
 
 SELECT * FROM Cliente;
@@ -183,6 +187,9 @@ SELECT * FROM Actividad;
 SELECT * FROM Rutina;
 SELECT * FROM Ejercicio;
 
+-- ======================
+-- Borrar datos tablas (pruebas) /Modo seguro
+-- ======================
 SET SQL_SAFE_UPDATES = 0;
 DELETE FROM Pago;
 DELETE FROM Cliente;
@@ -192,9 +199,53 @@ SET SQL_SAFE_UPDATES = 1;
 ALTER TABLE Pago AUTO_INCREMENT = 1;
 ALTER TABLE Cliente AUTO_INCREMENT = 1;
 
-
+-- ======================
+-- Agregamos columnas nuevas en Tabla Cliente para guardar todos los datos
+-- ======================
 ALTER TABLE Cliente
 ADD COLUMN actividad VARCHAR(50),
 ADD COLUMN idRutina INT,
 ADD COLUMN estadoPago VARCHAR(20),
 ADD FOREIGN KEY (idRutina) REFERENCES Rutina(idRutina);
+
+-- ======================
+-- Tabla rol
+-- ======================
+CREATE TABLE rol (
+    idRol INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion VARCHAR(100)
+);
+-- ======================
+-- Tabla usuario
+-- ======================
+CREATE TABLE usuario (
+    idUsuario INT AUTO_INCREMENT PRIMARY KEY,
+    nombreUsuario VARCHAR(50) NOT NULL UNIQUE,
+    contrasena VARCHAR(255) NOT NULL,
+    nombreCompleto VARCHAR(100),
+    idRol INT NOT NULL,
+    activo BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (idRol) REFERENCES rol(idRol)
+);
+
+-- Insertar roles básicos
+INSERT INTO rol (nombre, descripcion) VALUES
+('ADMIN', 'Acceso total al sistema'),
+('INSTRUCTOR', 'Puede gestionar clientes, pagos y rutinas');
+
+-- Insertar usuario administrador inicial
+INSERT INTO usuario (nombreUsuario, contrasena, nombreCompleto, idRol)
+VALUES ('admin', '1234', 'Administrador del sistema', 1);
+
+-- Insertar usuario instructor
+INSERT INTO usuario (nombreUsuario, contrasena, nombreCompleto, idRol)
+VALUES ('instructor1', 'abcd1234', 'Jazmin Bustos', 2);
+
+-- ======================
+-- CONSULTAS DE VERIFICACIÓN
+-- ======================
+SELECT * FROM rol;
+SELECT * FROM usuario;
+
+ALTER TABLE Rutina ADD notasSemanales TEXT;

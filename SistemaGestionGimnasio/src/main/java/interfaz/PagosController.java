@@ -1,6 +1,8 @@
 package interfaz;
 
 import control.PagoDAO;
+import entidad.Sesion;
+import entidad.Usuario;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,6 +16,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import utils.VentanaUtils;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -175,14 +178,21 @@ public class PagosController {
         btnVolver.setGraphic(iconVolver);
         btnVolver.setOnAction(e -> {
             try {
-                Stage stageMenu = new Stage();
+                Usuario usuario = Sesion.getUsuarioActual();
+
+                // Reutilizamos el Stage actual del módulo
+                Stage stageActual = (Stage) btnVolver.getScene().getWindow();
+
                 GestionGimnasioFX menu = new GestionGimnasioFX();
-                menu.start(stageMenu);
-                stage.close();
+                menu.mostrarVentanaPrincipal(stageActual, usuario); // <-- pasamos el Stage actual
+
+                // NO necesitamos stage.close(); porque estamos reutilizando
+                // stageActual.setScene(...) dentro de mostrarVentanaPrincipal
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         });
+
 
         // ────────────────────────────────
         // LAYOUT FINAL
@@ -292,6 +302,8 @@ public class PagosController {
         Scene scene = new Scene(root, 950, 550);
         scene.getStylesheets().add(PagosController.class.getResource("/estilos.css").toExternalForm());
         stage.setScene(scene);
+        VentanaUtils.centrar(stage);
+
 
         actualizarTotales.run();
     }
