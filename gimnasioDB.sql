@@ -248,4 +248,16 @@ VALUES ('instructor1', 'abcd1234', 'Jazmin Bustos', 2);
 SELECT * FROM rol;
 SELECT * FROM usuario;
 
+-- Agregamos a la tabla Rutina notasSemanales para que se guarden
 ALTER TABLE Rutina ADD notasSemanales TEXT;
+
+-- Si el cliente se borra se borran también sus registros de pagos
+SHOW CREATE TABLE Pago;
+ALTER TABLE Pago
+DROP FOREIGN KEY Pago_ibfk_1;
+ALTER TABLE Pago
+ADD CONSTRAINT Pago_ibfk_1
+    FOREIGN KEY (idCliente) REFERENCES Cliente(idCliente)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE;
+

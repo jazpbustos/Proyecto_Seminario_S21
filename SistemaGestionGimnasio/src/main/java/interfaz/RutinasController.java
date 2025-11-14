@@ -19,7 +19,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import utils.VentanaUtils;
+import utils.PDFRutinaUtils;
+import java.awt.Desktop;    // para abrir carpeta
 
+
+import java.io.File;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -256,6 +260,44 @@ public class RutinasController {
             }
         });
 
+        // ==== EXPORTAR ====
+        Button btnExportar = new Button();
+        btnExportar.getStyleClass().add("button-principal");
+        btnExportar.setGraphic(new ImageView(
+                new Image(RutinasController.class.getResourceAsStream("/icons/export.png"), 16, 16, true, true)
+        ));
+        btnExportar.setDisable(true);
+
+        listaRutinas.getSelectionModel().selectedItemProperty().addListener((obs, old, sel) -> {
+            btnEditar.setDisable(sel == null);
+            btnExportar.setDisable(sel == null);
+        });
+
+        btnExportar.setOnAction(e -> {
+            Rutinas sel = listaRutinas.getSelectionModel().getSelectedItem();
+            if (sel == null) return;
+
+            File pdf = PDFRutinaUtils.exportarPDF(sel);
+
+            if (pdf != null) {
+                // Abrir carpeta donde quedó guardado
+                try {
+                    Desktop.getDesktop().open(pdf.getParentFile());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
+                new Alert(Alert.AlertType.INFORMATION,
+                        "PDF generado correctamente:\n" + pdf.getAbsolutePath())
+                        .showAndWait();
+            } else {
+                new Alert(Alert.AlertType.ERROR,
+                        "Error al generar el PDF.")
+                        .showAndWait();
+            }
+        });
+
+
         // ==== GUARDAR ====
         btnGuardar.setOnAction(event -> {
             try {
@@ -339,7 +381,7 @@ public class RutinasController {
         });
 
         // ================== LAYOUT ==================
-        VBox listaVBox = new VBox(10, btnNuevo, btnEditar, lblBuscar, tfBuscar, listaRutinas);
+        VBox listaVBox = new VBox(10, btnNuevo, btnEditar, btnExportar, lblBuscar, tfBuscar, listaRutinas);
         listaVBox.setPadding(new Insets(10));
 
         ScrollPane spFicha = new ScrollPane(ficha);

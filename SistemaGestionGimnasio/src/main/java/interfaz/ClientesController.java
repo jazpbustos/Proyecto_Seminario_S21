@@ -13,6 +13,10 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -21,8 +25,14 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import utils.PDFRutinaUtils;
 import utils.VentanaUtils;
 
+import java.awt.*;
+import java.io.File;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Arrays;
@@ -165,6 +175,40 @@ public class ClientesController {
         DatePicker dpFechaPago = new DatePicker(LocalDate.now());
         ComboBox<String> cbPago = new ComboBox<>(FXCollections.observableArrayList("Pagó", "Adeuda"));
 
+        // Nombre solo letras
+        tfNombre.textProperty().addListener((obs, oldV, newV) -> {
+            if (!newV.matches("[A-Za-zÁÉÍÓÚáéíóúÑñ ]*")) {
+                tfNombre.setText(oldV);
+            }
+        });
+
+// Apellido solo letras
+        tfApellido.textProperty().addListener((obs, oldV, newV) -> {
+            if (!newV.matches("[A-Za-zÁÉÍÓÚáéíóúÑñ ]*")) {
+                tfApellido.setText(oldV);
+            }
+        });
+
+// DNI números (máx 8)
+        tfDNI.textProperty().addListener((obs, oldV, newV) -> {
+            if (!newV.matches("\\d*")) {
+                tfDNI.setText(newV.replaceAll("[^\\d]", ""));
+            }
+            if (tfDNI.getText().length() > 8) {
+                tfDNI.setText(tfDNI.getText().substring(0, 8));
+            }
+        });
+
+// CELULAR números (máx 12)
+        tfCelular.textProperty().addListener((obs, oldV, newV) -> {
+            if (!newV.matches("\\d*")) {
+                tfCelular.setText(newV.replaceAll("[^\\d]", ""));
+            }
+            if (tfCelular.getText().length() > 12) {
+                tfCelular.setText(tfCelular.getText().substring(0, 12));
+            }
+        });
+
         // --- ACTIVIDADES DB ---
         ComboBox<ActividadesController.Actividad> cbActividad = new ComboBox<>();
         cbActividad.setItems(ActividadDAO.listarActividades());
@@ -238,39 +282,20 @@ public class ClientesController {
 
         listaClientes.getSelectionModel().selectedItemProperty().addListener((obs, old, sel) -> btnEditar.setDisable(sel == null));
 
+        // --- VALIDACIONES ---
         Runnable validar = () -> {
-            // Nombre y apellido: obligatorios y solo letras (con acentos y espacios)
+
             if (tfNombre.getText().isBlank() || tfApellido.getText().isBlank())
                 throw new RuntimeException("Nombre y apellido obligatorios");
-            if (!tfNombre.getText().matches("[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"))
-                throw new RuntimeException("El nombre solo puede contener letras y espacios");
-            if (!tfApellido.getText().matches("[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"))
-                throw new RuntimeException("El apellido solo puede contener letras y espacios");
+
             if (tfNombre.getText().length() < 2 || tfApellido.getText().length() < 2)
                 throw new RuntimeException("El nombre y apellido deben tener al menos 2 letras");
 
+            // DNIs válidos
+            if (tfDNI.getText().length() != 8)
+                throw new RuntimeException("El DNI debe tener 8 dígitos");
 
-// --- Limitar formato DNI (solo números, máx 8 dígitos) ---
-            tfDNI.textProperty().addListener((obs, oldValue, newValue) -> {
-                if (!newValue.matches("\\d*")) {
-                    tfDNI.setText(newValue.replaceAll("[^\\d]", "")); // borra letras o símbolos
-                }
-                if (tfDNI.getText().length() > 8) {
-                    tfDNI.setText(tfDNI.getText().substring(0, 8)); // limita a 8 dígitos
-                }
-            });
-
-// --- Limitar formato CELULAR (solo números, máx 12 dígitos) ---
-            tfCelular.textProperty().addListener((obs, oldValue, newValue) -> {
-                if (!newValue.matches("\\d*")) {
-                    tfCelular.setText(newValue.replaceAll("[^\\d]", ""));
-                }
-                if (tfCelular.getText().length() > 12) {
-                    tfCelular.setText(tfCelular.getText().substring(0, 12));
-                }
-            });
-
-            // Validar que no exista otro cliente con el mismo DNI (solo al registrar nuevo)
+            // DNI repetido
             if ("Registrar Cliente".equals(btnGuardar.getText())) {
                 boolean existe = clientes.stream()
                         .anyMatch(c -> c.getDni().equals(tfDNI.getText()));
@@ -278,15 +303,15 @@ public class ClientesController {
                     throw new RuntimeException("Ya existe un cliente registrado con ese DNI");
             }
 
-            // Correo: opcional, pero si se completa debe tener formato válido
-            if (!tfCorreo.getText().isBlank() && !tfCorreo.getText().matches("^[\\w._%+-]+@[\\w.-]+\\.[A-Za-z]{2,}$"))
+            // Mail
+            if (!tfCorreo.getText().isBlank() &&
+                    !tfCorreo.getText().matches("^[\\w._%+-]+@[\\w.-]+\\.[A-Za-z]{2,}$"))
                 throw new RuntimeException("El correo electrónico no tiene un formato válido");
 
-            // Actividad obligatoria
+            // Actividad
             if (cbActividad.getValue() == null)
                 throw new RuntimeException("Seleccioná una actividad");
         };
-
 
 // --- NUEVO CLIENTE ---
         btnNuevo.setOnAction(e -> {
@@ -556,6 +581,51 @@ public class ClientesController {
                 ficha.setVisible(false);
             }
         });
+
+        // --- ENVIAR RUTINA ---
+        btnEnviarRutina.setOnAction(e -> {
+            try {
+                Cliente cliente = listaClientes.getSelectionModel().getSelectedItem();
+                Rutinas rutina = cbRutina.getValue();
+
+                if (cliente == null || rutina == null) {
+                    new Alert(Alert.AlertType.ERROR, "Seleccioná un cliente y una rutina.").showAndWait();
+                    return;
+                }
+
+                // 1) EXPORTAR EL PDF
+                File pdf = PDFRutinaUtils.exportarPDF(rutina);
+
+                if (pdf == null) {
+                    new Alert(Alert.AlertType.ERROR, "Error al generar el PDF.").showAndWait();
+                    return;
+                }
+
+                // 2) ARMAR MENSAJE AUTOMÁTICO
+                String mensaje = "Hola " + cliente.getNombre() + "! Te paso la rutina en PDF. Adjunto archivo debajo \uD83D\uDE0A\uD83D\uDCAA\uD83C\uDFFC👇";
+                String msgEncoded = URLEncoder.encode(mensaje, StandardCharsets.UTF_8);
+
+                // 3) CELULAR DEL CLIENTE (sin +54)
+                String numero = cliente.getCelular().replace("+", "").replace(" ", "");
+
+                // 4) ABRIR WHATSAPP WEB
+                String url = "https://wa.me/54" + numero + "?text=" + msgEncoded;
+                Desktop.getDesktop().browse(new URI(url));
+
+                // 5) ABRIR CARPETA DEL PDF PARA ADJUNTARLO AL TOQUE
+                Desktop.getDesktop().open(pdf.getParentFile());
+
+                // 6) NOTIFICACIÓN
+                new Alert(Alert.AlertType.INFORMATION,
+                        "WhatsApp Web se abrió.\nAdjuntá el PDF desde la carpeta que se abrió.")
+                        .showAndWait();
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                new Alert(Alert.AlertType.ERROR, "No fue posible abrir WhatsApp.").showAndWait();
+            }
+        });
+
 
         // --- LAYOUT ---
         VBox listaVBox = new VBox(10, btnNuevo, btnEditar, new Label("Buscar:"), tfBuscar, listaClientes);

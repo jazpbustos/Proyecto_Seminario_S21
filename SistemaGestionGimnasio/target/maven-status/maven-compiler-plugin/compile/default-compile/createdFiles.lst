@@ -9,6 +9,7 @@ interfaz\RutinasController.class
 control\PagoDAO.class
 interfaz\ClientesController$1.class
 interfaz\ActividadesController.class
+utils\PDFRutinaUtils.class
 interfaz\ClientesController$Cliente.class
 control\RutinaDAO.class
 interfaz\DBConnection.class
