@@ -1,5 +1,6 @@
 package interfaz;
 
+import entidad.Pagos;
 import control.PagoDAO;
 import entidad.Sesion;
 import entidad.Usuario;
@@ -11,13 +12,19 @@ import javafx.collections.transformation.SortedList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import utils.AlertUtils;
 import utils.VentanaUtils;
-
+import utils.PDFPagoUtils;
+import java.awt.*;
+import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -193,6 +200,42 @@ public class PagosController {
             }
         });
 
+        // ────────────────────────────────
+        // BOTÓN EXPORTAR
+        // ────────────────────────────────
+        Button btnExportar = new Button();
+        btnExportar.getStyleClass().add("button-principal");
+        btnExportar.setGraphic(new ImageView(
+                new Image(PagosController.class.getResourceAsStream("/icons/export.png"), 16, 16, true, true)
+        ));
+
+        btnExportar.setOnAction(e -> {
+            ObservableList<Pago> listaVisible = tablaPagos.getItems();
+
+            if (listaVisible.isEmpty()) {
+                AlertUtils.mostrar(Alert.AlertType.WARNING, "Sin datos", "No hay pagos para exportar.");
+                return;
+            }
+
+            File pdf = PDFPagoUtils.exportarPDF(listaVisible);
+
+            if (pdf != null) {
+                try {
+                    Desktop.getDesktop().open(pdf.getParentFile());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
+                AlertUtils.mostrar(
+                        Alert.AlertType.INFORMATION,
+                        "PDF generado",
+                        "El PDF fue exportado correctamente en:\n" + pdf.getAbsolutePath()
+                );
+
+            } else {
+                AlertUtils.mostrar(Alert.AlertType.ERROR, "Error", "Error al generar el PDF.");
+            }
+        });
 
         // ────────────────────────────────
         // LAYOUT FINAL
@@ -296,7 +339,7 @@ public class PagosController {
         totalsBox.setPadding(new Insets(10, 20, 10, 20));
         totalsBox.setStyle("-fx-alignment: center-right; -fx-background-color: #303030; -fx-font-weight: bold;");
 
-        VBox root = new VBox(10, btnVolver, tfBuscar, filtrosEstado, filtrosFecha, tablaPagos, totalsBox);
+        VBox root = new VBox(10, btnVolver, btnExportar, tfBuscar, filtrosEstado, filtrosFecha, tablaPagos, totalsBox);
         root.setPadding(new Insets(10));
 
         Scene scene = new Scene(root, 950, 550);
@@ -307,6 +350,7 @@ public class PagosController {
 
         actualizarTotales.run();
     }
+
 }
 
 

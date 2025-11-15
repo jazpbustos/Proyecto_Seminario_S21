@@ -11,6 +11,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import utils.AlertUtils;
 import utils.VentanaUtils;
 
 public class ActividadesController {
@@ -152,7 +153,7 @@ public class ActividadesController {
                     Actividad nueva = new Actividad(tfNombre.getText(), precio, duracion);
                     ActividadDAO.insertarActividad(nueva);
                     actividades.add(nueva);
-                    new Alert(Alert.AlertType.INFORMATION, "Actividad registrada!").showAndWait();
+                    AlertUtils.mostrar(Alert.AlertType.INFORMATION, "Actividad registrada", "Actividad registrada!");
                 } else {
                     Actividad sel = listaActividades.getSelectionModel().getSelectedItem();
                     sel.setNombre(tfNombre.getText());
@@ -160,13 +161,24 @@ public class ActividadesController {
                     sel.setDuracion(duracion);
                     ActividadDAO.actualizarActividad(sel);
                     listaActividades.refresh();
-                    new Alert(Alert.AlertType.INFORMATION, "Cambios guardados!").showAndWait();
+                    AlertUtils.mostrar(Alert.AlertType.INFORMATION, "Cambios guardados", "Cambios guardados!");
                 }
                 ficha.setVisible(false);
             } catch (RuntimeException ex) {
-                new Alert(Alert.AlertType.ERROR, ex.getMessage()).showAndWait();
+                AlertUtils.mostrar(Alert.AlertType.ERROR, "Error", ex.getMessage());
             }
         });
+
+        btnBorrar.setOnAction(e -> {
+            Actividad sel = listaActividades.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                ActividadDAO.borrarActividad(sel.getNombre());
+                actividades.remove(sel);
+                AlertUtils.mostrar(Alert.AlertType.INFORMATION, "Actividad eliminada", "Actividad eliminada!");
+                ficha.setVisible(false);
+            }
+        });
+
 
         btnBorrar.setOnAction(e -> {
             Actividad sel = listaActividades.getSelectionModel().getSelectedItem();

@@ -18,6 +18,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import utils.AlertUtils;
 import utils.VentanaUtils;
 import utils.PDFRutinaUtils;
 import java.awt.Desktop;    // para abrir carpeta
@@ -280,25 +281,18 @@ public class RutinasController {
             File pdf = PDFRutinaUtils.exportarPDF(sel);
 
             if (pdf != null) {
-                // Abrir carpeta donde quedó guardado
                 try {
                     Desktop.getDesktop().open(pdf.getParentFile());
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+                } catch (Exception ex) { ex.printStackTrace(); }
 
-                new Alert(Alert.AlertType.INFORMATION,
-                        "PDF generado correctamente:\n" + pdf.getAbsolutePath())
-                        .showAndWait();
+                AlertUtils.mostrar(Alert.AlertType.INFORMATION, "PDF generado",
+                        "PDF generado correctamente:\n" + pdf.getAbsolutePath());
             } else {
-                new Alert(Alert.AlertType.ERROR,
-                        "Error al generar el PDF.")
-                        .showAndWait();
+                AlertUtils.mostrar(Alert.AlertType.ERROR, "Error", "Error al generar el PDF.");
             }
         });
 
-
-        // ==== GUARDAR ====
+// ==== GUARDAR ====
         btnGuardar.setOnAction(event -> {
             try {
                 if (tfNombre.getText().isBlank() || taDescripcion.getText().isBlank())
@@ -308,45 +302,28 @@ public class RutinasController {
                 LocalDate fin = dpFin.getValue();
 
                 if (inicio != null && fin != null && fin.isBefore(inicio)) {
-                    new Alert(Alert.AlertType.ERROR,
-                            "La fecha de fin no puede ser anterior a la fecha de inicio").showAndWait();
+                    AlertUtils.mostrar(Alert.AlertType.ERROR, "Error de fechas",
+                            "La fecha de fin no puede ser anterior a la fecha de inicio");
                     return;
                 }
 
-                // === semanas según fechas ===
                 int semanas = 1;
                 if (inicio != null && fin != null)
                     semanas = (int) Math.max(1, ChronoUnit.DAYS.between(inicio, fin) / 7 + 1);
 
-                // === construir lista de notas ===
                 List<String> notas = new ArrayList<>();
                 for (TextField tf : notasSemanaFields) notas.add(tf.getText());
 
                 if (btnGuardar.getText().equals("Registrar Rutina")) {
-
-                    // === NUEVA ===
-                    Rutinas nueva = new Rutinas(
-                            0,
-                            tfNombre.getText(),
-                            taDescripcion.getText(),
-                            inicio, fin
-                    );
-
+                    Rutinas nueva = new Rutinas(0, tfNombre.getText(), taDescripcion.getText(), inicio, fin);
                     nueva.setNotasSemanales(notas);
-
-                    // agregar ejercicios
-                    ejerciciosTodos.forEach(ej -> nueva.agregarEjercicio(ej));
-
+                    ejerciciosTodos.forEach(nueva::agregarEjercicio);
                     RutinaDAO.insertarRutina(nueva);
                     rutinas.add(nueva);
 
-                    new Alert(Alert.AlertType.INFORMATION, "Rutina registrada!").showAndWait();
-
+                    AlertUtils.mostrar(Alert.AlertType.INFORMATION, "Rutina registrada", "Rutina registrada!");
                 } else {
-
-                    // === EDITAR ===
                     Rutinas sel = listaRutinas.getSelectionModel().getSelectedItem();
-
                     sel.setNombre(tfNombre.getText());
                     sel.setDescripcion(taDescripcion.getText());
                     sel.setFechaInicio(inicio);
@@ -359,23 +336,23 @@ public class RutinasController {
                     RutinaDAO.actualizarRutina(sel);
                     listaRutinas.refresh();
 
-                    new Alert(Alert.AlertType.INFORMATION, "Cambios guardados!").showAndWait();
+                    AlertUtils.mostrar(Alert.AlertType.INFORMATION, "Cambios guardados", "Cambios guardados!");
                 }
 
                 ficha.setVisible(false);
 
             } catch (RuntimeException ex) {
-                new Alert(Alert.AlertType.ERROR, ex.getMessage()).showAndWait();
+                AlertUtils.mostrar(Alert.AlertType.ERROR, "Error", ex.getMessage());
             }
         });
 
-        // ==== BORRAR ====
+// ==== BORRAR ====
         btnBorrar.setOnAction(event -> {
             Rutinas sel = listaRutinas.getSelectionModel().getSelectedItem();
             if (sel != null) {
                 RutinaDAO.borrarRutina(sel.getIdRutina());
                 rutinas.remove(sel);
-                new Alert(Alert.AlertType.INFORMATION, "Rutina eliminada!").showAndWait();
+                AlertUtils.mostrar(Alert.AlertType.INFORMATION, "Rutina eliminada", "Rutina eliminada!");
                 ficha.setVisible(false);
             }
         });
@@ -457,7 +434,7 @@ public class RutinasController {
                 dialog.close();
 
             } catch (Exception ex) {
-                new Alert(Alert.AlertType.ERROR, "Datos inválidos").showAndWait();
+                AlertUtils.mostrar(Alert.AlertType.ERROR, "Datos inválidos", "Datos inválidos");
             }
         });
 

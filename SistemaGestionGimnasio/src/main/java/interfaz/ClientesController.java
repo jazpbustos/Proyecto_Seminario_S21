@@ -1,5 +1,6 @@
 package interfaz;
 
+import utils.AlertUtils;
 import control.ActividadDAO;
 import control.ClienteDAO;
 import control.PagoDAO;
@@ -405,7 +406,7 @@ public class ClientesController {
 
                     ClienteDAO.insertarCliente(nuevo);
                     clientes.add(nuevo);
-                    new Alert(Alert.AlertType.INFORMATION, "Cliente registrado!").showAndWait();
+                    AlertUtils.mostrar(Alert.AlertType.INFORMATION, "Éxito", "Cliente registrado correctamente!");
 
                 } else { // Editar cliente
                     Cliente sel = listaClientes.getSelectionModel().getSelectedItem();
@@ -428,24 +429,31 @@ public class ClientesController {
 
                         ClienteDAO.actualizarCliente(sel);
                         listaClientes.refresh();
-                        new Alert(Alert.AlertType.INFORMATION, "Cambios guardados!").showAndWait();
+                        AlertUtils.mostrar(Alert.AlertType.INFORMATION, "Éxito", "Cambios guardados correctamente!");
                     }
                 }
 
                 ficha.setVisible(false);
 
+            } catch (RuntimeException ex) {
+                // Errores de validación → ALERTA ESTILIZADA
+                AlertUtils.mostrar(Alert.AlertType.ERROR, "Error", ex.getMessage());
+
             } catch (Exception ex) {
-                new Alert(Alert.AlertType.ERROR, ex.getMessage()).showAndWait();
+                // Errores inesperados (BD, NullPointer, etc.)
+                AlertUtils.mostrar(Alert.AlertType.ERROR, "Error inesperado", "Ocurrió un problema: " + ex.getMessage());
+                ex.printStackTrace();
             }
         });
 
 
-// --- REGISTRAR PAGO MANUAL ---
+// REGISTRAR PAGO MANUAL
         btnRegistrarPago.setOnAction(e -> {
             try {
                 // Validar datos mínimos
                 if (tfNombre.getText().isBlank() || tfApellido.getText().isBlank() || tfDNI.getText().isBlank()) {
-                    new Alert(Alert.AlertType.WARNING, "Completá al menos nombre, apellido y DNI antes de registrar el pago.").showAndWait();
+                    AlertUtils.mostrar(Alert.AlertType.WARNING, "Datos incompletos",
+                            "Completá al menos nombre, apellido y DNI antes de registrar el pago.");
                     return;
                 }
 
@@ -463,12 +471,9 @@ public class ClientesController {
 
                 // Si no existe, confirmar creación automática
                 if (sel == null && existente == null) {
-                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                            "El cliente no está registrado.\n¿Deseás crear el cliente y registrar su pago?",
-                            ButtonType.YES, ButtonType.NO);
-                    confirm.setHeaderText("Confirmar creación de cliente");
-                    confirm.showAndWait();
-                    if (confirm.getResult() != ButtonType.YES) return;
+                    AlertUtils.mostrar(Alert.AlertType.CONFIRMATION, "Confirmar creación de cliente",
+                            "El cliente no está registrado.\n¿Deseás crear el cliente y registrar su pago?");
+                    if (AlertUtils.crear(Alert.AlertType.CONFIRMATION, "", "").getResult() != ButtonType.YES) return;
                 }
 
                 // --- Datos de la ficha ---
@@ -539,37 +544,36 @@ public class ClientesController {
 
                 // --- NUEVA LÓGICA: detectar pago existente en misma fecha ---
                 if (PagoDAO.existePagoEnFecha(sel.getDni(), fechaPago)) {
-                    Alert decision = new Alert(Alert.AlertType.CONFIRMATION);
-                    decision.setTitle("Pago existente");
-                    decision.setHeaderText("Ya hay un pago registrado el " + fechaPago + " para " + sel.getNombre() + " " + sel.getApellido());
-                    decision.setContentText("¿Querés actualizar el pago existente (por cambio de actividad/monto)?\n\n"
-                            + "Sí = Actualiza el pago existente\nNo = Crea un nuevo registro");
+                    Alert decision = AlertUtils.crear(Alert.AlertType.CONFIRMATION, "Pago existente",
+                            "Ya hay un pago registrado el " + fechaPago + " para " + sel.getNombre() + " " + sel.getApellido() +
+                                    "\n¿Querés actualizar el pago existente (por cambio de actividad/monto)?\n\n" +
+                                    "Sí = Actualiza el pago existente\nNo = Crea un nuevo registro");
                     decision.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
-
                     decision.showAndWait();
 
                     if (decision.getResult() == ButtonType.YES) {
                         PagoDAO.actualizarPagoExistente(pago);
-                        new Alert(Alert.AlertType.INFORMATION, "Pago actualizado correctamente.").showAndWait();
+                        AlertUtils.mostrar(Alert.AlertType.INFORMATION, "Pago actualizado", "Pago actualizado correctamente.");
                     } else if (decision.getResult() == ButtonType.NO) {
                         PagoDAO.insertarPago(pago);
-                        new Alert(Alert.AlertType.INFORMATION, "Se creó un nuevo registro de pago.").showAndWait();
+                        AlertUtils.mostrar(Alert.AlertType.INFORMATION, "Nuevo registro", "Se creó un nuevo registro de pago.");
                     } else {
                         return; // cancelado
                     }
                 } else {
                     PagoDAO.insertarPago(pago);
-                    new Alert(Alert.AlertType.INFORMATION,
-                            "Pago registrado exitosamente para " + sel.getNombre() + " " + sel.getApellido()).showAndWait();
+                    AlertUtils.mostrar(Alert.AlertType.INFORMATION, "Pago registrado",
+                            "Pago registrado exitosamente para " + sel.getNombre() + " " + sel.getApellido());
                 }
 
                 ficha.setVisible(false);
 
             } catch (Exception ex) {
-                new Alert(Alert.AlertType.ERROR, "Error al registrar pago: " + ex.getMessage()).showAndWait();
+                AlertUtils.mostrar(Alert.AlertType.ERROR, "Error", "Error al registrar pago: " + ex.getMessage());
                 ex.printStackTrace();
             }
         });
+
 
         // --- BORRAR CLIENTE ---
         btnBorrar.setOnAction(e -> {
@@ -577,19 +581,19 @@ public class ClientesController {
             if (sel != null) {
                 ClienteDAO.borrarCliente(sel.getDni());
                 clientes.remove(sel);
-                new Alert(Alert.AlertType.INFORMATION, "Cliente eliminado!").showAndWait();
+                AlertUtils.mostrar(Alert.AlertType.INFORMATION, "Cliente eliminado", "Cliente eliminado correctamente!");
                 ficha.setVisible(false);
             }
         });
 
-        // --- ENVIAR RUTINA ---
+// --- ENVIAR RUTINA ---
         btnEnviarRutina.setOnAction(e -> {
             try {
                 Cliente cliente = listaClientes.getSelectionModel().getSelectedItem();
                 Rutinas rutina = cbRutina.getValue();
 
                 if (cliente == null || rutina == null) {
-                    new Alert(Alert.AlertType.ERROR, "Seleccioná un cliente y una rutina.").showAndWait();
+                    AlertUtils.mostrar(Alert.AlertType.ERROR, "Error", "Seleccioná un cliente y una rutina.");
                     return;
                 }
 
@@ -597,7 +601,7 @@ public class ClientesController {
                 File pdf = PDFRutinaUtils.exportarPDF(rutina);
 
                 if (pdf == null) {
-                    new Alert(Alert.AlertType.ERROR, "Error al generar el PDF.").showAndWait();
+                    AlertUtils.mostrar(Alert.AlertType.ERROR, "Error", "Error al generar el PDF.");
                     return;
                 }
 
@@ -616,16 +620,14 @@ public class ClientesController {
                 Desktop.getDesktop().open(pdf.getParentFile());
 
                 // 6) NOTIFICACIÓN
-                new Alert(Alert.AlertType.INFORMATION,
-                        "WhatsApp Web se abrió.\nAdjuntá el PDF desde la carpeta que se abrió.")
-                        .showAndWait();
+                AlertUtils.mostrar(Alert.AlertType.INFORMATION, "WhatsApp Web",
+                        "WhatsApp Web se abrió.\nAdjuntá el PDF desde la carpeta que se abrió.");
 
             } catch (Exception ex) {
                 ex.printStackTrace();
-                new Alert(Alert.AlertType.ERROR, "No fue posible abrir WhatsApp.").showAndWait();
+                AlertUtils.mostrar(Alert.AlertType.ERROR, "Error", "No fue posible abrir WhatsApp.");
             }
         });
-
 
         // --- LAYOUT ---
         VBox listaVBox = new VBox(10, btnNuevo, btnEditar, new Label("Buscar:"), tfBuscar, listaClientes);

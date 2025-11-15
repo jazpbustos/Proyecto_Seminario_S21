@@ -4,13 +4,14 @@ import control.UsuarioDAO;
 import entidad.Sesion;
 import entidad.Usuario;
 import javafx.application.Application;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.geometry.Pos;
+import javafx.scene.input.KeyCode;
 import utils.VentanaUtils;
 
 public class LoginFX extends Application {
@@ -48,6 +49,8 @@ public class LoginFX extends Application {
         Button btnIngresar = new Button("Ingresar");
         btnIngresar.getStyleClass().add("button-secundario-naranja");
         btnIngresar.setMaxWidth(120);
+
+        // 👉 Esto hace que ENTER ejecute el botón automáticamente
         btnIngresar.setDefaultButton(true);
 
         // --- FORMULARIO
@@ -65,16 +68,17 @@ public class LoginFX extends Application {
             String usuario = tfUsuario.getText().trim();
             String contrasena = tfContrasena.getText().trim();
 
+            // 🚫 Primero validamos campos vacíos
             if (usuario.isEmpty() || contrasena.isEmpty()) {
                 mostrarAlerta(Alert.AlertType.WARNING, "Campos vacíos", "Ingrese usuario y contraseña.");
                 return;
             }
 
+            // 🔍 Validación de usuario/contraseña
             Usuario user = UsuarioDAO.validarLogin(usuario, contrasena);
 
             if (user != null) {
                 Sesion.setUsuarioActual(user);
-                // En lugar de crear un Stage nuevo, pasamos el actual
                 GestionGimnasioFX home = new GestionGimnasioFX();
                 home.mostrarVentanaPrincipal(stage, user);
             } else {
@@ -88,18 +92,11 @@ public class LoginFX extends Application {
         Scene scene = new Scene(layout, 400, 300);
         scene.getStylesheets().add("estilos.css");
 
-        // Presionar Enter para ingresar
-        scene.setOnKeyPressed(event -> {
-            switch (event.getCode()) {
-                case ENTER -> btnIngresar.fire();
-            }
-        });
-
         stage.setTitle("Login - Sistema de Gestión");
         stage.setResizable(false);
         stage.setScene(scene);
         VentanaUtils.centrar(stage);
-        stage.show();;
+        stage.show();
     }
 
     private void mostrarAlerta(Alert.AlertType tipo, String titulo, String mensaje) {
@@ -107,6 +104,11 @@ public class LoginFX extends Application {
         alerta.setTitle(titulo);
         alerta.setHeaderText(null);
         alerta.setContentText(mensaje);
+
+        alerta.getDialogPane().getStylesheets().add(
+                ClientesController.class.getResource("/estilos.css").toExternalForm()
+        );
+
         alerta.showAndWait();
     }
 
@@ -114,3 +116,4 @@ public class LoginFX extends Application {
         launch(args);
     }
 }
+

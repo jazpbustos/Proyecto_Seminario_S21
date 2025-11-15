@@ -12,6 +12,7 @@ interfaz\ActividadesController.class
 utils\PDFRutinaUtils.class
 interfaz\ClientesController$Cliente.class
 control\RutinaDAO.class
+utils\AlertUtils.class
 interfaz\DBConnection.class
 interfaz\ClientesController$3.class
 com\gimnasio\Main.class
@@ -19,12 +20,12 @@ interfaz\LoginFX.class
 entidad\Pagos.class
 interfaz\ActividadesController$Actividad.class
 entidad\Clientes.class
+utils\PDFPagoUtils.class
 interfaz\GestionGimnasioFX.class
 entidad\Actividades.class
 entidad\Rutinas.class
 control\UsuarioDAO.class
 utils\VentanaUtils.class
-interfaz\LoginFX$1.class
 interfaz\PagosController$Pago.class
 entidad\Ejercicio.class
 interfaz\ClientesController$2.class
