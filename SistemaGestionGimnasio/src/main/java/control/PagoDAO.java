@@ -1,6 +1,5 @@
 package control;
 
-import interfaz.DBConnection;
 import interfaz.PagosController;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

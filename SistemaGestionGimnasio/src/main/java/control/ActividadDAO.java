@@ -1,7 +1,6 @@
 package control;
 
 import interfaz.ActividadesController;
-import interfaz.DBConnection;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 

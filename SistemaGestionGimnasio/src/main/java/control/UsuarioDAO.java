@@ -1,7 +1,6 @@
 package control;
 
 import entidad.Usuario;
-import interfaz.DBConnection;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

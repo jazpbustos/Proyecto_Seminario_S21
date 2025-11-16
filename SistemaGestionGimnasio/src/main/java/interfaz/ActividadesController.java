@@ -144,10 +144,23 @@ public class ActividadesController {
                 if (tfNombre.getText().isBlank() || tfPrecio.getText().isBlank() || tfDuracion.getText().isBlank())
                     throw new RuntimeException("Debe completar todos los campos");
 
-                double precio = Double.parseDouble(tfPrecio.getText());
-                int duracion = Integer.parseInt(tfDuracion.getText());
-                if (precio <= 0) throw new RuntimeException("El precio debe ser mayor a 0");
-                if (duracion <= 0) throw new RuntimeException("La duración debe ser mayor a 0");
+                double precio;
+                try {
+                    precio = Double.parseDouble(tfPrecio.getText());
+                    if (precio <= 0) throw new RuntimeException("El precio debe ser mayor a 0");
+                } catch (NumberFormatException ex) {
+                    AlertUtils.mostrar(Alert.AlertType.ERROR, "Error", "Precio no válido: solo permite ingresar números.");
+                    return;
+                }
+
+                int duracion;
+                try {
+                    duracion = Integer.parseInt(tfDuracion.getText());
+                    if (duracion <= 0) throw new RuntimeException("La duración debe ser mayor a 0");
+                } catch (NumberFormatException ex) {
+                    AlertUtils.mostrar(Alert.AlertType.ERROR, "Error", "Duración inválida: controla que esté en días y sea mayor a cero.");
+                    return;
+                }
 
                 if ("Registrar Actividad".equals(btnGuardar.getText())) {
                     Actividad nueva = new Actividad(tfNombre.getText(), precio, duracion);
@@ -163,11 +176,14 @@ public class ActividadesController {
                     listaActividades.refresh();
                     AlertUtils.mostrar(Alert.AlertType.INFORMATION, "Cambios guardados", "Cambios guardados!");
                 }
+
                 ficha.setVisible(false);
+
             } catch (RuntimeException ex) {
                 AlertUtils.mostrar(Alert.AlertType.ERROR, "Error", ex.getMessage());
             }
         });
+
 
         btnBorrar.setOnAction(e -> {
             Actividad sel = listaActividades.getSelectionModel().getSelectedItem();
@@ -179,16 +195,6 @@ public class ActividadesController {
             }
         });
 
-
-        btnBorrar.setOnAction(e -> {
-            Actividad sel = listaActividades.getSelectionModel().getSelectedItem();
-            if (sel != null) {
-                ActividadDAO.borrarActividad(sel.getNombre());
-                actividades.remove(sel);
-                new Alert(Alert.AlertType.INFORMATION, "Actividad eliminada!").showAndWait();
-                ficha.setVisible(false);
-            }
-        });
 
         // ================== LAYOUT ==================
         VBox listaVBox = new VBox(10, btnNuevo, btnEditar, lblBuscar, tfBuscar, listaActividades);

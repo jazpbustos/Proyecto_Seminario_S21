@@ -2,7 +2,6 @@ package control;
 
 import entidad.Ejercicio;
 import entidad.Rutinas;
-import interfaz.DBConnection;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -17,17 +16,14 @@ public class RutinaDAO {
 
     // ------------------------ INSERTAR ------------------------
     public static void insertarRutina(Rutinas r) {
-
         String sqlRutina = "INSERT INTO Rutina (nombre, descripcion, fechaInicio, fechaFin, notasSemanales) " +
                 "VALUES (?, ?, ?, ?, ?)";
-
         String sqlEjercicio = "INSERT INTO Ejercicio (idRutina, nombre, series, reps, dia) " +
                 "VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement psRutina = conn.prepareStatement(sqlRutina, Statement.RETURN_GENERATED_KEYS);
              PreparedStatement psEj = conn.prepareStatement(sqlEjercicio)) {
-
             psRutina.setString(1, r.getNombre());
             psRutina.setString(2, r.getDescripcion());
             psRutina.setDate(3, r.getFechaInicio() != null ? Date.valueOf(r.getFechaInicio()) : null);
@@ -35,13 +31,11 @@ public class RutinaDAO {
 
             // Serializamos notas: nota1|||nota2|||nota3
             psRutina.setString(5, String.join(SEP, r.getNotasSemanales()));
-
             psRutina.executeUpdate();
 
             try (ResultSet rs = psRutina.getGeneratedKeys()) {
                 if (rs.next()) r.setIdRutina(rs.getInt(1));
             }
-
             for (Ejercicio e : r.getEjercicios()) {
                 psEj.setInt(1, r.getIdRutina());
                 psEj.setString(2, e.getNombre());

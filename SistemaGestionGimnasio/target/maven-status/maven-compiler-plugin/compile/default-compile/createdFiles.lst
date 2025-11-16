@@ -13,8 +13,8 @@ utils\PDFRutinaUtils.class
 interfaz\ClientesController$Cliente.class
 control\RutinaDAO.class
 utils\AlertUtils.class
-interfaz\DBConnection.class
 interfaz\ClientesController$3.class
+control\DBConnection.class
 com\gimnasio\Main.class
 interfaz\LoginFX.class
 entidad\Pagos.class

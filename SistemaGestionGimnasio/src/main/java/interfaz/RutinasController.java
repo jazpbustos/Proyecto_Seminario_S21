@@ -298,6 +298,14 @@ public class RutinasController {
                 if (tfNombre.getText().isBlank() || taDescripcion.getText().isBlank())
                     throw new RuntimeException("Completar nombre y descripción");
 
+                // VALIDACIÓN: al menos un ejercicio
+                if (ejerciciosTodos.isEmpty()) {
+                    AlertUtils.mostrar(Alert.AlertType.WARNING,
+                            "Rutina vacía",
+                            "La rutina debe tener al menos un ejercicio antes de guardarse.");
+                    return;
+                }
+
                 LocalDate inicio = dpInicio.getValue();
                 LocalDate fin = dpFin.getValue();
 
@@ -312,7 +320,8 @@ public class RutinasController {
                     semanas = (int) Math.max(1, ChronoUnit.DAYS.between(inicio, fin) / 7 + 1);
 
                 List<String> notas = new ArrayList<>();
-                for (TextField tf : notasSemanaFields) notas.add(tf.getText());
+                for (TextField tf : notasSemanaFields)
+                    notas.add(tf.getText());
 
                 if (btnGuardar.getText().equals("Registrar Rutina")) {
                     Rutinas nueva = new Rutinas(0, tfNombre.getText(), taDescripcion.getText(), inicio, fin);

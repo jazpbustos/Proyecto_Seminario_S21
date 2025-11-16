@@ -1,5 +1,7 @@
 package interfaz;
 
+import control.DBConnection;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 

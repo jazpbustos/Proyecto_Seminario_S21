@@ -313,6 +313,11 @@ public class ClientesController {
             if (cbActividad.getValue() == null)
                 throw new RuntimeException("Seleccioná una actividad");
         };
+        // Fecha de nacimiento no puede ser futura
+        if (dpFechaNac.getValue() != null && dpFechaNac.getValue().isAfter(LocalDate.now())) {
+            throw new RuntimeException("La fecha de nacimiento no puede ser futura");
+        }
+
 
 // --- NUEVO CLIENTE ---
         btnNuevo.setOnAction(e -> {
@@ -329,6 +334,16 @@ public class ClientesController {
 // --- CALCULAR EDAD AUTOMÁTICAMENTE ---
         dpFechaNac.setOnAction(ev -> {
             if (dpFechaNac.getValue() != null) {
+
+                if (dpFechaNac.getValue().isAfter(LocalDate.now())) {
+                    AlertUtils.mostrar(Alert.AlertType.ERROR, "Fecha inválida",
+                            "La fecha de nacimiento no puede ser futura.");
+
+                    dpFechaNac.setValue(null);
+                    tfEdad.clear();
+                    return;
+                }
+
                 int edad = Period.between(dpFechaNac.getValue(), LocalDate.now()).getYears();
                 tfEdad.setText(String.valueOf(edad));
             } else {
@@ -642,6 +657,8 @@ public class ClientesController {
         scene.getStylesheets().add(ClientesController.class.getResource("/estilos.css").toExternalForm());
         stage.setScene(scene);
         VentanaUtils.centrar(stage);
+        stage.setResizable(true);
+
     }
 
     private static Button crearBotonConIcono(String rutaIcono) {
